@@ -1,4 +1,11 @@
-import { Module } from '@nestjs/common';
+import {
+  LoggerService,
+  LogLevel,
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { MovieModule } from './movie/movie.module';
 import { ChatModule } from './chat/chat.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -10,6 +17,14 @@ import { DirectorModule } from './director/director.module';
 import { Director } from './director/entity/director.entity';
 import { GenreModule } from './genre/genre.module';
 import { Genre } from './genre/entity/genre.entity';
+import { AuthModule } from './auth/auth.module';
+import { UserModule } from './user/user.module';
+import { User } from './user/entities/user.entity';
+import { envVariableKeys } from './common/const/env.const';
+import { NestApplication } from '@nestjs/core';
+import { NestMicroserviceOptions } from '@nestjs/common/interfaces/microservices/nest-microservice-options.interface';
+import { NestGateway } from '@nestjs/websockets/interfaces/nest-gateway.interface';
+import { BearerTokenMiddleware } from './auth/middleware/bearer-token.middleware';
 
 @Module({
   // 모듈을 불러들임
@@ -26,18 +41,21 @@ import { Genre } from './genre/entity/genre.entity';
         DB_USERNAME: joi.string().required(),
         DB_PASSWORD: joi.string().required(),
         DB_DATABASE: joi.string().required(),
+        HASH_ROUNDS: joi.number().required(),
+        ACCESS_TOKEN_SECRET: joi.string().required(),
+        REFERSH_TOKEN_SECRET: joi.string().required(),
       }),
     }),
     // 비동기로 forRootAsync
     TypeOrmModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({
-        type: configService.get<string>('DB_TYPE') as 'mysql',
-        host: configService.get<string>('DB_HOST'),
-        port: configService.get<number>('DB_PORT'),
-        username: configService.get<string>('DB_USERNAME'),
-        password: configService.get<string>('DB_PASSWORD'),
-        database: configService.get<string>('DB_DATABASE'),
-        entities: [Movie, MovieDetail, Director, Genre],
+        type: configService.get<string>(envVariableKeys.dbType) as 'mysql',
+        host: configService.get<string>(envVariableKeys.dbHost),
+        port: configService.get<number>(envVariableKeys.dbPort),
+        username: configService.get<string>(envVariableKeys.dbUsername),
+        password: configService.get<string>(envVariableKeys.dbPassword),
+        database: configService.get<string>(envVariableKeys.dbDatabase),
+        entities: [Movie, MovieDetail, Director, Genre, User],
         logging: true,
         synchronize: true,
       }),
@@ -58,6 +76,31 @@ import { Genre } from './genre/entity/genre.entity';
     DirectorModule,
     ChatModule,
     GenreModule,
+    AuthModule,
+    UserModule,
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  // configure 함수 구현
+  configure(consumer: MiddlewareConsumer) {
+    // 추가할 미들웨어
+    consumer
+      .apply(
+        BearerTokenMiddleware,
+
+        // 모든 라우터에 적용
+      )
+      // 미들웨어를 제외할 라우터 경로 및 http 메서드
+      .exclude(
+        {
+          path: 'auth/login',
+          method: RequestMethod.POST,
+        },
+        {
+          path: 'auth/register',
+          method: RequestMethod.POST,
+        },
+      )
+      .forRoutes('*');
+  }
+}

@@ -1,3 +1,4 @@
+import { PartialType } from '@nestjs/mapped-types';
 import {
   ArrayNotEmpty,
   Contains,
@@ -30,6 +31,7 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
+import { CreateMovieDto } from './create-movie.dto';
 
 // 커스텀 validator 작성하려면 ValidatorConstraintInterface 인터페이스를
 // 구현해야함
@@ -60,29 +62,24 @@ import {
 
 // function PasswordValida(validate: ValidationOptions) {}
 
-export class UpdateMoiveDto {
-  @IsNotEmpty()
-  @IsString()
-  @IsOptional()
-  title?: string;
-
-  @IsArray()
-  @ArrayNotEmpty()
-  @IsNumber(
-    {},
-    {
-      each: true,
-    },
-  )
-  @IsOptional()
-  genreIds?: number[];
-
-  @IsNotEmpty()
-  @IsOptional()
-  detail?: string;
-
-  @IsNotEmpty()
-  @IsNumber()
-  @IsOptional()
-  directorId?: number;
+// PartialType은 객체의 모든 프로퍼티를 옵셔널(?)로 설정함
+export class UpdateMoiveDto extends PartialType(CreateMovieDto) {
+  // @IsNotEmpty()
+  // @IsString()
+  // title?: string;
+  // @IsNotEmpty()
+  // detail?: string;
+  // @IsNotEmpty()
+  // @IsNumber()
+  // directorId?: number;
+  // @IsArray()
+  // @ArrayNotEmpty()
+  // @IsNumber(
+  //   {},
+  //   {
+  //     // 배열에 안에 있는 모든 값이 number 인지 검증
+  //     each: true,
+  //   },
+  // )
+  // genreIds?: number[];
 }

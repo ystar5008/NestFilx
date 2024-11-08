@@ -7,19 +7,18 @@ import {
   IsString,
 } from 'class-validator';
 
-export class UpdateDirectorDto {
-  @IsNotEmpty()
-  @IsString()
-  @IsOptional()
-  name?: string;
-
-  @IsNotEmpty()
-  @IsDateString()
-  @IsOptional()
-  dob?: Date;
-
-  @IsNotEmpty()
-  @IsString()
-  @IsOptional()
-  nationality?: string;
+// PartialType => 상속받은 객체의 모든 프로퍼티를 옵셔널로 설정함
+export class UpdateDirectorDto extends PartialType(CreateDirectorDto) {
+  // @IsNotEmpty()
+  // @IsString()
+  // @IsOptional()
+  // name?: string;
+  // @IsNotEmpty()
+  // @IsDateString()
+  // @IsOptional()
+  // dob?: Date;
+  // @IsNotEmpty()
+  // @IsString()
+  // @IsOptional()
+  // nationality?: string;
 }
