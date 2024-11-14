@@ -11,19 +11,21 @@ import { AuthGuard, IAuthGuard, Type } from '@nestjs/passport';
 import { LocalAuthGuard } from './strategy/local.strategy';
 import { JwtAuthGuard } from './strategy/jwt.strategy';
 import { User } from 'src/user/entities/user.entity';
+import { Public } from './decorator/public.decorator';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Public()
   @Post('register')
   registerUser(@Headers('authorization') token: string) {
     return this.authService.register(token);
   }
 
+  @Public()
   @Post('login')
   loginUser(@Headers('authorization') token: string) {
-    console.log(1);
     return this.authService.login(token);
   }
 

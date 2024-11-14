@@ -7,7 +7,9 @@ import { DataSource, In, Like, Repository } from 'typeorm';
 import { MovieDetail } from './entity/movie-detail.entity';
 import { Director } from 'src/director/entity/director.entity';
 import { Genre } from 'src/genre/entity/genre.entity';
-import { findSourceMap } from 'module';
+import { GetMoivesDto } from './dto/get-movies.dto';
+import { CommonService } from 'src/common/common.service';
+import { CursorPaginationDto } from 'src/common/dto/cursor-pagination.dto';
 
 @Injectable()
 export class MovieService {
@@ -21,9 +23,11 @@ export class MovieService {
     @InjectRepository(Genre)
     private readonly genreRepository: Repository<Genre>,
     private readonly dataSource: DataSource,
+    private readonly commonService: CommonService,
   ) {}
 
-  async findAll(title?: string) {
+  async findAll(dto: GetMoivesDto) {
+    const { title } = dto;
     // movie 테이블 별칭
     const qb = await this.movieRepository
       .createQueryBuilder('movie')
@@ -31,25 +35,20 @@ export class MovieService {
       .leftJoinAndSelect('movie.genres', 'genres');
 
     if (title) {
-      qb.where('movie.title LIKE :  title', { title: `%${title}` });
+      console.log(title);
+      qb.where('movie.title LIKE :title', { title: `%${title}` });
     }
-    console.log(qb);
-    return await qb.getManyAndCount();
-    // if (!title) {
-    //   return [
-    //     await this.movieRepository.find({
-    //       relations: ['detail', 'director'],
-    //     }),
-    //     // 전체 값이 얼마인지 클라이언트로 반환
-    //     await this.movieRepository.count(),
-    //   ];
+
+    // if (take && page) {
+    //   // 1페이지 에 5개의 데이터 가져오기
+    //   // 0 - 1 * 5
+    //   // 1 - 1 * 5
+    //   this.commonService.applyPagePaginationParamsToQb(qb, dto);
     // }
-    // return this.movieRepository.findAndCount({
-    //   where: {
-    //     title: Like(`%${title}`),
-    //   },
-    //   relations: ['director', 'genres'],
-    // });
+
+    this.commonService.applycursorPaginationParamsToQb(qb, dto);
+    // 실제 쿼리를 수행하는 부분
+    return await qb.getManyAndCount();
   }
 
   async findOne(id: number) {

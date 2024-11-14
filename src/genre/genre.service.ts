@@ -12,7 +12,16 @@ export class GenreService {
     private readonly genreRepository: Repository<Genre>,
   ) {}
 
-  create(createGenreDto: CreateGenreDto) {
+  async create(createGenreDto: CreateGenreDto) {
+    const genre = await this.genreRepository.findOne({
+      where: {
+        name: createGenreDto.name,
+      },
+    });
+
+    if (genre) {
+      throw new NotFoundException('존재');
+    }
     return this.genreRepository.save(createGenreDto);
   }
 

@@ -12,6 +12,12 @@ async function bootstrap() {
       whitelist: true,
       // 정의 하지 않은 값을 전달하면 에러 발생 O
       forbidNonWhitelisted: true,
+      transformOptions: {
+        // Dto에 작성된 타입을 기반으로 타입을 변경해라
+        // url에 입력된 파라미터들 take='2' => take=2로 변경
+        // 자동으로 데이터 변환
+        enableImplicitConversion: true,
+      },
     }),
   );
   await app.listen(3000);

@@ -22,13 +22,14 @@ export class AuthService implements OnModuleInit {
     private readonly jwtService: JwtService,
   ) {}
 
-  async onModuleInit() {
-    /**
+  /**
       * 외부 API와의 연결이 필요한 초기화 작업
         설정 파일 로딩 또는 환경 변수를 기반으로 한 설정 초기화
-        특정 모듈이 의존하는 리소스를 설정하거나 초기화하는 작업*/
-    const user = await this.userRepository.find();
-    console.log(user);
+        특정 모듈이 의존하는 리소스를 설정하거나 초기화하는 작업   
+     */
+  async onModuleInit() {
+    // const user = await this.userRepository.find();
+    // console.log(user);
   }
 
   parseBasicToken(rawToken: string) {
@@ -147,7 +148,7 @@ export class AuthService implements OnModuleInit {
 
     return {
       refreshToken: await this.issueToken(user, true),
-      accesToken: await this.issueToken(user, false),
+      accessToken: await this.issueToken(user, false),
     };
   }
 

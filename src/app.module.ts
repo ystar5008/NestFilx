@@ -21,10 +21,12 @@ import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { User } from './user/entities/user.entity';
 import { envVariableKeys } from './common/const/env.const';
-import { NestApplication } from '@nestjs/core';
+import { APP_GUARD, NestApplication } from '@nestjs/core';
 import { NestMicroserviceOptions } from '@nestjs/common/interfaces/microservices/nest-microservice-options.interface';
 import { NestGateway } from '@nestjs/websockets/interfaces/nest-gateway.interface';
 import { BearerTokenMiddleware } from './auth/middleware/bearer-token.middleware';
+import { AuthGuard } from './auth/guard/auth.guard';
+import { RBACGuard } from './auth/guard/rbac.gurad';
 
 @Module({
   // 모듈을 불러들임
@@ -78,6 +80,17 @@ import { BearerTokenMiddleware } from './auth/middleware/bearer-token.middleware
     GenreModule,
     AuthModule,
     UserModule,
+  ],
+  providers: [
+    {
+      // 프로젝트 모든 라우터에 가드 적용
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RBACGuard,
+    },
   ],
 })
 export class AppModule implements NestModule {
