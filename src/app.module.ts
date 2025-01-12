@@ -48,7 +48,7 @@ import { MovieUserLike } from './movie/entity/movie-user-like.entity';
       // 환경변수 검증
       validationSchema: joi.object({
         ENV: joi.string().valid('dev', 'prod').required(),
-        DB_TYPE: joi.string().valid('mysql').required(),
+        DB_TYPE: joi.string().valid('postgres').required(),
         DB_HOST: joi.string().required(),
         DB_PORT: joi.number().required(),
         DB_USERNAME: joi.string().required(),
@@ -62,7 +62,7 @@ import { MovieUserLike } from './movie/entity/movie-user-like.entity';
     // 비동기로 forRootAsync
     TypeOrmModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({
-        type: configService.get<string>(envVariableKeys.dbType) as 'mysql',
+        type: configService.get<string>(envVariableKeys.dbType) as 'postgres',
         host: configService.get<string>(envVariableKeys.dbHost),
         port: configService.get<number>(envVariableKeys.dbPort),
         username: configService.get<string>(envVariableKeys.dbUsername),
