@@ -21,12 +21,23 @@ import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { User } from './user/entities/user.entity';
 import { envVariableKeys } from './common/const/env.const';
-import { APP_GUARD, NestApplication } from '@nestjs/core';
+import {
+  APP_FILTER,
+  APP_GUARD,
+  APP_INTERCEPTOR,
+  NestApplication,
+} from '@nestjs/core';
 import { NestMicroserviceOptions } from '@nestjs/common/interfaces/microservices/nest-microservice-options.interface';
 import { NestGateway } from '@nestjs/websockets/interfaces/nest-gateway.interface';
 import { BearerTokenMiddleware } from './auth/middleware/bearer-token.middleware';
 import { AuthGuard } from './auth/guard/auth.guard';
 import { RBACGuard } from './auth/guard/rbac.gurad';
+import { ResponseTimeInterceptor } from './common/interceptor/response-time.interceptor';
+import { ForbiddenExceptionFilter } from './common/filter/forbidden.filter';
+import { QueryFailedExceptionFilter } from './common/filter/query-failed.filter';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+import { MovieUserLike } from './movie/entity/movie-user-like.entity';
 
 @Module({
   // 모듈을 불러들임
@@ -57,7 +68,7 @@ import { RBACGuard } from './auth/guard/rbac.gurad';
         username: configService.get<string>(envVariableKeys.dbUsername),
         password: configService.get<string>(envVariableKeys.dbPassword),
         database: configService.get<string>(envVariableKeys.dbDatabase),
-        entities: [Movie, MovieDetail, Director, Genre, User],
+        entities: [Movie, MovieDetail, Director, Genre, User, MovieUserLike],
         logging: true,
         synchronize: true,
       }),
@@ -80,6 +91,12 @@ import { RBACGuard } from './auth/guard/rbac.gurad';
     GenreModule,
     AuthModule,
     UserModule,
+    ServeStaticModule.forRoot({
+      //퍼블릭 폴더만 서빙
+      rootPath: join(process.cwd(), 'public'),
+      // public 폴더 안에 있는
+      serveRoot: '/public/',
+    }),
   ],
   providers: [
     {
@@ -90,6 +107,18 @@ import { RBACGuard } from './auth/guard/rbac.gurad';
     {
       provide: APP_GUARD,
       useClass: RBACGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ResponseTimeInterceptor,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: ForbiddenExceptionFilter,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: QueryFailedExceptionFilter,
     },
   ],
 })
